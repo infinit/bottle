@@ -643,6 +643,7 @@ class Bottle(object):
         self.routes = []  # List of installed :class:`Route` instances.
         self.router = Router()  # Maps requests to :class:`Route` instances.
         self.error_handler = {}
+        self.ignore_trailing_slash = False # Whether to ignore trailing slashes in URLs.
 
         # Core plugins
         self.plugins = []  # List of installed plugins.
@@ -1037,6 +1038,8 @@ class Bottle(object):
 
     def __call__(self, environ, start_response):
         """ Each instance of :class:'Bottle' is a WSGI application. """
+        if self.ignore_trailing_slash:
+            environ['PATH_INFO'] = environ['PATH_INFO'].rstrip('/')
         return self.wsgi(environ, start_response)
 
     def __enter__(self):

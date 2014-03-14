@@ -2864,6 +2864,7 @@ class WSGIRefServer(ServerAdapter):
         self.srv = make_server(self.host, self.port, app, server_cls,
                                handler_cls)
         self.port = self.srv.server_port  # update port actual port (0 means random)
+        app.port = self.port
         try:
             self.srv.serve_forever()
         except KeyboardInterrupt:

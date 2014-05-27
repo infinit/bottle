@@ -2652,7 +2652,7 @@ def _lscmp(a, b):
 
 def cookie_encode(data, key):
     """ Encode and sign a pickle-able object. Return a (byte) string """
-    msg = base64.b64encode(pickle.dumps(data, -1))
+    msg = base64.b64encode(pickle.dumps(data))
     sig = base64.b64encode(hmac.new(tob(key), msg).digest())
     return tob('!') + sig + tob('?') + msg
 

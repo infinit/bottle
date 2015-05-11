@@ -121,6 +121,10 @@ if py3k:
     from urllib.parse import urlencode, quote as urlquote, unquote as urlunquote
     urlunquote = functools.partial(urlunquote, encoding='latin1')
     from http.cookies import SimpleCookie
+    class MyCookie(SimpleCookie):
+        def value_encode(self, val):
+            strval = str(val)
+            return strval, strval
     from collections import MutableMapping as DictMixin
     import pickle
     from io import BytesIO
@@ -139,6 +143,10 @@ else:  # 2.x
     from urlparse import urljoin, SplitResult as UrlSplitResult
     from urllib import urlencode, quote as urlquote, unquote as urlunquote
     from Cookie import SimpleCookie
+    class MyCookie(SimpleCookie):
+        def value_encode(self, val):
+            strval = str(val)
+            return strval, strval
     from itertools import imap
     import cPickle as pickle
     from StringIO import StringIO as BytesIO
@@ -1123,7 +1131,7 @@ class BaseRequest(object):
     def cookies(self):
         """ Cookies parsed into a :class:`FormsDict`. Signed cookies are NOT
             decoded. Use :meth:`get_cookie` if you expect signed cookies. """
-        cookies = SimpleCookie(self.environ.get('HTTP_COOKIE', '')).values()
+        cookies = MyCookie(self.environ.get('HTTP_COOKIE','')).values()
         return FormsDict((c.key, c.value) for c in cookies)
 
     def get_cookie(self, key, default=None, secret=None):
@@ -1722,8 +1730,7 @@ class BaseResponse(object):
             save, not to store secret information at client side.
         """
         if not self._cookies:
-            self._cookies = SimpleCookie()
-
+            self._cookies = MyCookie()
         if secret:
             value = touni(cookie_encode((name, value), secret))
         elif not isinstance(value, basestring):

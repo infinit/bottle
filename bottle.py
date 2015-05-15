@@ -2501,7 +2501,8 @@ def _file_iter_range(fp, offset, bytes, maxread=1024 * 1024):
 def static_file(filename, root,
                 mimetype='auto',
                 download=False,
-                charset='UTF-8'):
+                charset='UTF-8',
+                opener=None):
     """ Open a file in a safe way and return :exc:`HTTPResponse` with status
         code 200, 305, 403 or 404. The ``Content-Type``, ``Content-Encoding``,
         ``Content-Length`` and ``Last-Modified`` headers are set if possible.
@@ -2525,6 +2526,8 @@ def static_file(filename, root,
     filename = os.path.abspath(os.path.join(root, filename.strip('/\\')))
     headers = dict()
 
+    if opener is None:
+        opener = lambda p: open(p, 'rb')
     if not filename.startswith(root):
         return HTTPError(403, "Access denied.")
     if not os.path.exists(filename) or not os.path.isfile(filename):
@@ -2561,7 +2564,7 @@ def static_file(filename, root,
                                         time.gmtime())
         return HTTPResponse(status=304, **headers)
 
-    body = '' if request.method == 'HEAD' else open(filename, 'rb')
+    body = '' if request.method == 'HEAD' else opener(filename)
 
     headers["Accept-Ranges"] = "bytes"
     ranges = request.environ.get('HTTP_RANGE')

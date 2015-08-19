@@ -621,6 +621,7 @@ class Route(object):
         cb = self.get_undecorated_callback()
         return '<%s %r %r>' % (self.method, self.rule, cb)
 
+
 ###############################################################################
 # Application Object ###########################################################
 ###############################################################################
@@ -909,7 +910,8 @@ class Bottle(object):
         return wrapper
 
     def default_error_handler(self, res):
-        return tob(template(ERROR_PAGE_TEMPLATE, e=res))
+        return tob(template(ERROR_PAGE_TEMPLATE,
+                            e = res, debug = self.debug()))
 
     def _handle(self, environ):
         path = environ['bottle.raw_path'] = environ['PATH_INFO']
@@ -1063,6 +1065,9 @@ class Bottle(object):
             if route.callback == f:
                 return self.router.build(route.rule, **parameters)
         raise Exception('Reverse not found for %s.' % f)
+
+    def debug(self):
+        return DEBUG
 
 
 ###############################################################################
@@ -3856,7 +3861,7 @@ _HTTP_STATUS_LINES = dict((k, '%d %s' % (k, v))
 #: The default template used for error pages. Override with @error()
 ERROR_PAGE_TEMPLATE = """
 %%try:
-    %%from %s import DEBUG, request
+    %%from %s import request
     <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
     <html>
         <head>
@@ -3873,11 +3878,11 @@ ERROR_PAGE_TEMPLATE = """
             <p>Sorry, the requested URL <tt>{{repr(request.url)}}</tt>
                caused an error:</p>
             <pre>{{e.body}}</pre>
-            %%if DEBUG and e.exception:
+            %%if debug and e.exception:
               <h2>Exception:</h2>
               <pre>{{repr(e.exception)}}</pre>
             %%end
-            %%if DEBUG and e.traceback:
+            %%if debug and e.traceback:
               <h2>Traceback:</h2>
               <pre>{{e.traceback}}</pre>
             %%end

@@ -3966,4 +3966,35 @@ if __name__ == '__main__':
         debug=opt.debug,
         config=config)
 
+
+class CertificationPlugin(object):
+
+  '''Bottle plugin to handle SSL client certificates.'''
+
+  name = 'certification'
+  api  = 2
+  key_dn = 'SSL_CLIENT_DN'
+  key_ok = 'SSL_CLIENT_VERIFIED'
+
+  def __init__(self):
+    pass
+
+  def apply(self, callback, route):
+    global request
+    def wrapper(*args, **kwargs):
+      environ = request.environ
+      request.certificate = None
+      ok = environ.get(CertificationPlugin.key_ok)
+      dn = environ.get(CertificationPlugin.key_dn)
+      if ok == 'SUCCESS' and dn is not None:
+        try:
+          field = dn.split('/')[-1]
+          email = field.split('=')[-1]
+        except:
+          pass
+        else:
+          request.certificate = email
+      return callback(*args, **kwargs)
+    return wrapper
+
 # THE END

@@ -1060,9 +1060,10 @@ class Bottle(object):
     def __exit__(self, exc_type, exc_value, traceback):
         default_app.pop()
 
-    def reverse(self, f, **parameters):
+    def reverse(self, id, **parameters):
         for route in self.routes:
-            if route.callback == f:
+            if isinstance(id, str)  and route.name == id or \
+               callable(id) and route.callback == id:
                 return self.router.build(route.rule, **parameters)
         raise Exception('Reverse not found for %s.' % f)
 

@@ -927,7 +927,7 @@ class Bottle(object):
             response.bind()
             try:
                 self.trigger_hook('before_request')
-                route, args = self.router.match(environ)
+                route, args = self.match(environ)
                 environ['route.handle'] = route
                 environ['bottle.route'] = route
                 environ['route.url_args'] = args
